@@ -1,0 +1,8 @@
+zu klären:
++ Wie Trigger-Cleanup nur wenn keine Referenzen mehr auf dynamischem Funktionsobjekt?
+	->-> kein Problem, weil keine Pointer auf Dynamik Strukturen exsitieren: es wird mit dem operator= das Wrapper object in den member pointer kopiert.
++ positionen der trigger-Aufrufe in der main loop. -> in calender turncound
+ // eine Instanz g->Ts
+
+tools: std::bind, std::mem_fn: std::ref, std::cref, (std::reference_wrapper)
+todo: standard conditions+Trigger: Creature-distanz, Creature-zu-point-distanz, Map-distanz

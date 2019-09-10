@@ -3,16 +3,20 @@
 #include<tuple>
 #include<type_traits>
 
-
-#include"Trigger.h"
+#include "cata_utility.h"
+#include "Trigger.h"
 
 
 using Trigger_standard::no_trigger;
 extern Trigger_system* _1;
 
-Trigger::Trigger(activation_p_t func, condition_p_t cond = Trigger_standard::allways, int to_live_checks = -1, int to_live_act = 1) :
-function(func), condition( cond ), to_live_checks(to_live_checks), to_live_act(to_live_act)
+Trigger::Trigger(activation_p_t func, condition_p_t cond = return_true<Trigger&>, Function_Data& func_data = nullptr, Function_Data& cond_data = nullptr, int to_live_checks = -1, int to_live_act = 1) :
+function(func), condition( cond ), function_data( *func_data ), condition_data( *cond_data ), to_live_checks( to_live_checks ), to_live_act( to_live_act )
 {}
+
+struct FunctionData{
+	
+};
 
 void Trigger_system::check(trigger_timing chk) {
 	auto que = trig_active.at( chk );
@@ -70,7 +74,7 @@ void deserialize( JsonIn &jsin ){
 }
 */
 
-Trigger Trigger_standard::get_activation_Trigger(Trigger later_trig, trigger_timing chk, condition_p_t cond = allways, int to_live_checks = -1, int to_live_act = 1) {
+Trigger Trigger_standard::get_activation_Trigger(Trigger later_trig, trigger_timing chk, condition_p_t cond = return_true<Trigger&>, int to_live_checks = -1, int to_live_act = 1) {
 	return Trigger( 
 		std::bind( g->Ts.add, later_trig, chk, false ),
 		cond, to_live_checks, to_live_act

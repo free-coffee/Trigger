@@ -1,23 +1,23 @@
 #include<deque>
 #include<functional>
 #include<map>
-#include<memory>
 #include<tuple>
 
 struct Trigger;
+struct Function_Data;
 class Trigger_system;
 
 namespace Trigger_standard{ //slow ?
 static void no_trigger(Trigger_system* ) {}
-static bool allways(const Trigger& ) { return true; }
 }
 
 typedef std::function<void(Trigger_system* )> do_check_p_t;
-typedef std::function<void(Trigger)> activation_p_t;
-typedef std::function<bool(const Trigger&)> condition_p_t;
+typedef std::function<void(Trigger, FunctionData)> activation_p_t;
+typedef std::function<bool(const Trigger&, FunctionData)> condition_p_t;
 
 enum trigger_timing: int {
 	FRAME,
+	SECOUND,
 	MINUTE,
 	HOUR,
 	DAY,
@@ -28,10 +28,12 @@ enum trigger_timing: int {
 struct Trigger{
 	activation_p_t function;
 	condition_p_t condition;
+	Function_Data function_data;
+	Function_Data condition_data
 	int to_live_checks;
 	int to_live_act;
 
-	Trigger(activation_p_t func, condition_p_t cond, int to_live_checks, int to_live_act);
+	Trigger(activation_p_t func, condition_p_t cond, Function_Data& func_data, Function_Data& cond_data, int to_live_checks, int to_live_act);
 	// No Cleanup required for std::function.
 };
 
