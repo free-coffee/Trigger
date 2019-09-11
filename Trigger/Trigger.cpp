@@ -29,12 +29,12 @@ Trigger::~Trigger(){
 
 template<class Types...>
 void Trigger::bind_function(bool triggerref, Types... args){
-	bind(func, triggerref, args...);
+	bind( *function, triggerref, args...);
 }
 
 template<class Types...>
 void Trigger::bind_condition(bool triggerref, Types... args){
-	cond(func, triggerref, args...);
+	cond( *condition, triggerref, args...);
 }
 
 extern Trigger& _1;
