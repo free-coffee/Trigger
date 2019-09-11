@@ -19,21 +19,26 @@ std::map<std::string, activation_p_t> Trigger::cond_map = {
 };
 
 Trigger::Trigger(activation_p_t func, condition_p_t cond = return_true<Trigger&>, int to_live_checks = -1, int to_live_act = 1) :
-function(func), condition( cond ), to_live_checks( to_live_checks ), to_live_act( to_live_act )
+function( new std::function( func ) ), condition( new std::function( cond ) ), to_live_checks( to_live_checks ), to_live_act( to_live_act )
 {}
 
-template<Types...>
+Trigger::~Trigger(){
+    ~*condition();
+    ~*function();
+}
+
+template<class Types...>
 void Trigger::bind_function(bool triggerref, Types... args){
 	bind(func, triggerref, args...);
 }
 
-template<Types...>
+template<class Types...>
 void Trigger::bind_condition(bool triggerref, Types... args){
 	cond(func, triggerref, args...);
 }
 
 extern Trigger& _1;
-template<Types...>
+template<class Types...>
 void Trigger::bind(std::function& used, bool triggerref, Types... args){
 	if(triggerref){
 		used = std::bind(used.target(), _1, args...);
@@ -55,7 +60,7 @@ void TriggerSystem::check(trigger_timing chk) {
 				remove( tk, chk );
 				continue;
 			}
-			tr.function( tr );
+			(*tr.function)( tr );
 		}
 	}
 }

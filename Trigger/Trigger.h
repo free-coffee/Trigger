@@ -7,7 +7,7 @@ struct Trigger;
 struct Function_Data;
 class Trigger_system;
 
-namespace Trigger_standard{ //slow ?
+namespace Trigger_standard{
 static void no_trigger(Trigger_system* ) {}
 }
 
@@ -26,18 +26,18 @@ enum trigger_timing: int {
 };
 
 struct Trigger{
-	activation_p_t function;
-	condition_p_t condition;
+	activation_p_t* function;
+	condition_p_t* condition;
 	int to_live_checks;
 	int to_live_act;
 
 	// If func or cond require arguments use the bind members.
 	Trigger(activation_p_t func , condition_p_t cond, Function_Data& func_data, Function_Data& cond_data, int to_live_checks, int to_live_act);
-	// No Cleanup required for std::function.
+	~Trigger();
 
-	template<Types...>
+	template<class ... Types>
 	void bind_function(bool triggerref, Types... args);
-	template<Types...>
+	template<class ... Types>
 	void bind_condition(bool triggerref, Types... args);
 
 	void load( JsonObject &data );
@@ -46,7 +46,7 @@ private:
     static std::map<std::string, activation_p_t> active_map;
     static std::map<std::string, activation_p_t> cond_map;
 
-	template<Types...>
+	template<class ... Types>
 	void bind(std::function& used, bool triggerref, Types... args);
 };
 
