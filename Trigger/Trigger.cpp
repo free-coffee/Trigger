@@ -14,13 +14,34 @@ std::map<std::string, activation_p_t> Trigger::active_map = {
 
 };
 
-std::map<std::string, activation_p_t> Trigger::cond_map = {
+std::map<std::string, condition_p_t> Trigger::cond_map = {
     { "map_dist" : Trigger_standard::map_dist }
+};
+
+std::map<std::string, std::function<void(JsonObject)>> Trigger::type_read_map = {
+    { "Creature_Creature_int_short" : &Trigger::funcDataRead<Creature&, Creature&, int, short>},
+    { "{'Creature&', 'Tripoint', 'int', 'short'}" : &Trigger::funcDataRead<Creature&, Tripoint, int, short>}
 };
 
 Trigger::Trigger(activation_p_t func, condition_p_t cond = return_true<Trigger&>, int to_live_checks = -1, int to_live_act = 1) :
 function( new std::function( func ) ), condition( new std::function( cond ) ), to_live_checks( to_live_checks ), to_live_act( to_live_act )
 {}
+
+Trigger::Trigger(std::function<void()>  func, condition_p_t cond = return_true<Trigger&>, int to_live_checks = -1, int to_live_act = 1){
+    Trigger( func, cond , to_live_checks, to_live_act );
+    bind_function( false );
+}
+
+Trigger::Trigger(activation_p_t func, std::function<bool()> cond = return_true<Trigger&>, int to_live_checks = -1, int to_live_act = 1){
+    Trigger( func, cond , to_live_checks, to_live_act );
+    bind_condition( false );
+}
+
+Trigger::Trigger(std::function<void()>  func, std::function<bool()> cond = return_true<Trigger&>, int to_live_checks = -1, int to_live_act = 1){
+    Trigger( func, cond , to_live_checks, to_live_act );
+    bind_function( false );
+    bind_condition( false );
+}
 
 Trigger::~Trigger(){
     ~*condition();
@@ -34,7 +55,7 @@ void Trigger::bind_function(bool triggerref, Types... args){
 
 template<class Types...>
 void Trigger::bind_condition(bool triggerref, Types... args){
-	cond( *condition, triggerref, args...);
+	bind( *condition, triggerref, args...);
 }
 
 extern Trigger& _1;

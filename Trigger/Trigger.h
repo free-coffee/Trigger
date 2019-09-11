@@ -31,8 +31,11 @@ struct Trigger{
 	int to_live_checks;
 	int to_live_act;
 
-	// If func or cond require arguments use the bind members.
+	// If func or cond require arguments diffrent frome None or (Trigger& ) use the bind members.
 	Trigger(activation_p_t func , condition_p_t cond, Function_Data& func_data, Function_Data& cond_data, int to_live_checks, int to_live_act);
+	Trigger(std::function<void()> func , condition_p_t cond, Function_Data& func_data, Function_Data& cond_data, int to_live_checks, int to_live_act);
+	Trigger(activation_p_t func , std::function<bool()> cond, Function_Data& func_data, Function_Data& cond_data, int to_live_checks, int to_live_act);
+	Trigger(std::function<void()> , std::function<bool()> cond, Function_Data& func_data, Function_Data& cond_data, int to_live_checks, int to_live_act);
 	~Trigger();
 
 	template<class ... Types>
@@ -44,11 +47,13 @@ struct Trigger{
 	void unload( JsonOut &json );
 private:
     static std::map<std::string, activation_p_t> active_map;
-    static std::map<std::string, activation_p_t> cond_map;
+    static std::map<std::string, condition_p_t> cond_map;
+    static std::map<std::string, std::function<void(JsonObject)>> type_read_map;
 
 	template<class ... Types>
 	void bind(std::function& used, bool triggerref, Types... args);
 };
+
 
 class TriggerSystem{
 	//storing
@@ -70,7 +75,7 @@ class TriggerSystem{
 	void remove(std::deque<Trigger>::iterator trig_p, trigger_timing chk);
 
 	void serialize( JsonOut &jsout ) const;
-        void deserialize( JsonIn &jsin );
+    void deserialize( JsonIn &jsin );
 };
 
 

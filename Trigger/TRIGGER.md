@@ -14,12 +14,10 @@ str: Ttiming for checking the Trigger. Possible values as defined in Trigger.h/t
 FRAME, SECOUND, MINUTE, HOUR, DAY, SEASON, YEAR
 
 "function":
-str: Name of the function called on activation. Has to be mapped in Trigger.cpp/active_map and have the blueprint void(Trigger, FunctionData).
+str: Name of the function called on activation. Has to be mapped in Trigger.cpp/active_map. Its function must have the blueprint void(Trigger& ) or specify function_data if the arguments differ.
 
 "condition":
-str/obj: Name or inline of the condition checked on timing. Names have to be mapped in Trigger.cpp/condition_map and have the blueprint bool(const Trigger&, FunctionData).
-Inlines have the folloing elements:
-- "algorithm": possibilities:
+str: Name of the condition checked on timing. Names have to be mapped in Trigger.cpp/condition_map. Its function must have the blueprint bool(Trigger& ) or specify condition_data if the arguments differ.
 
 "to_live_checks"
 int: number of condition checks the Trigger will perform before destruction. -1 for infinite.
@@ -42,10 +40,10 @@ Use Trigger::bind_function(triggerref, args) and bind_condition(triggerref, args
 Data used for binding of function arguments. Members have the same name in json and code.
 
 "types":
-str: names of the argument types in their keywords seperated with '_'. These have to be predefined in Trigger.cpp/FuncDataTypes
+array of str: names of the argument types. These have to be predefined in Trigger.cpp/type_map
 
-"defaults":
-array of any: used if not specified on creation.
+"values":
+array of any: stored values with types in the same order.
 
 
 ## Standart applications:

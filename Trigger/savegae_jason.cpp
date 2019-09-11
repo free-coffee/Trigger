@@ -1,57 +1,56 @@
 void TriggerSystem::deserialize( JsonIn &jsin )
 {
     JsonObject data = jsin.get_object();
-    load( data );
+    for( JsonObject trigdata : data.get_array() ){
+
+    }
 }
 
 void Trigger::load( JsonObject &data )
 {
     std::string timing_str;
     data.read( "timing", timing_str );
-    type = string_to_enum( sidtmp );
 
-    std::string ftmp;
-    data.read( "function", ftmp );
-    function = active_map.get( ftmp );
+    std::string tmp;
+    data.read( "function", tmp );
+    *function = active_map.get( tmp );
 
-"condition":
-str/obj: Name or inline of the condition checked on timing. Names have to be mapped in Trigger.cpp/condition_map and have the blueprint bool(const Trigger&, FunctionData).
-Inlines have the folloing elements:
-- "algorithm": possibilities in Trigger.cpp/condition_map
+    data.read( "condition", tmp );
+    *condition = cond_map.get( tmp );
 
-"to_live_checks"
-int: number of condition checks the Trigger will perform before destruction. -1 for infinite.
+    data.read("to_live_checks", to_live_checks);
+    data.read("to_live_act", to_live_act);
 
-"to_live_act":
-int: number of function executions/activations the Trigger will perform before destruction. -1 for infinite.
-
-"condition_data":
-str/obj: name or inline of Function data used for the condition.
-
-"function_data":
-/*
-    std::string sidtmp;
-    data.read( "typeid", sidtmp );
-    type = &mtype_id( sidtmp ).obj();
-
-    data.read( "unique_name", unique_name );
-    data.read( "posx", position.x );
-    data.read( "posy", position.y );
-    if( !data.read( "posz", position.z ) ) {
-        position.z = g->get_levz();
+    for( std::string funcDataName : {"condition_data", "function_data"} ){
+        if(data.has_member( funcDataName ) ){
+            JsonObject jfuncdata;
+            if(data.has_string( funcDataName ) ){
+                //jfuncdata = ; //add json type FunctionData with searchable Ids.
+                realDebugmsg( "not inline FunctionData not implemented" );
+            } else {
+                jfuncdata = data.get_object( funcDataName );
+            }
+            std::string types = jfuncdata.ge_array( "types" );
+            Trigger::type_read_map( types ) ( jfuncdata );
+        }
     }
-
-    data.read( "wandf", wandf );
-    data.read( "wandx", wander_pos.x );
-    data.read( "wandy", wander_pos.y );
-    if( data.read( "wandz", wander_pos.z ) ) {
-        wander_pos.z = position.z;
-    }
-    data.read( "tied_item", tied_item );
-    data.read( "hp", hp );
-    data.read( "battery_item", battery_item );*/
+    g->Ts.add( *this, string_to_enum( timing_str ), false);
 }
 
+template<class Types... >
+void Trigger::funcDataRead( JsonObject jfuncdata){
+    JasonArray jdata = jfuncdata.ge_array( "values" );
+    std::tuple<Types... > cdata;
+    std::get<std::integer_sequence<>>( cdata ) = jdata.read_next()... ; //c++14, how without integer_sequence to unpack the data?
+    switch( funcDataName ){
+        case "condition_data":
+            ;
+            break;
+        case "function_data":
+            break;
+        }
+    }
+}
 void TriggerSystem::serialize( JsonOut &json ) const
 {
 
