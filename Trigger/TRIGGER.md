@@ -9,6 +9,9 @@ Define the triggers in a json and then:
 
 ## Trigger definition in json.
 
+"name" :
+str: name of the Trigger.
+
 "timing":
 str: Ttiming for checking the Trigger. Possible values as defined in Trigger.h/trigger_timing are:
 FRAME, SECOUND, MINUTE, HOUR, DAY, SEASON, YEAR
@@ -31,6 +34,12 @@ str/obj: name or inline of Function data used for the condition.
 "function_data":
 str/obj: name or inline of Function data used for the function.
 
+"flags":
+"UNIQUE" : If the Trigger is active it can't be added again.
+"FIFO" : The Trigger is at the end of the que instead of the start.
+"COND_TRIGGER_ACCESS" :
+"ACT_TRIGGER_ACCESS" :
+
 ## Trigger definition hardcoded.
 
 Use Trigger(func, cond, to_live_checks, to_live_act) to create a Trigger-object with the arguments coresponding to the 2,3,5,6 Elements in the paragraph above.
@@ -43,8 +52,10 @@ Data used for binding of function arguments. Members have the same name in json 
 array of str: names of the argument types. These have to be predefined in Trigger.cpp/type_map
 
 "values":
-array of any: stored values with types in the same order.
-
+array of str: stored values with types in the same order. Included are:
+- "creature": str storing the name of the used creature. If the name isn't unique the first in the games creature list is chosen.
+- "point": 2-3 ints storing a point seperated with '_'. It is relative to either the character startpiont (on game creation) or the spawnpoint of the Creature or map owning the Trigger.
+- basic (int/short): string converted in code.
 
 ## Standart applications:
 

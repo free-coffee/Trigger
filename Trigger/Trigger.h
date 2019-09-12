@@ -30,12 +30,14 @@ struct Trigger{
 	condition_p_t* condition;
 	int to_live_checks;
 	int to_live_act;
+	std::string name;
 
 	// If func or cond require arguments diffrent frome None or (Trigger& ) use the bind members.
 	Trigger(activation_p_t func , condition_p_t cond, Function_Data& func_data, Function_Data& cond_data, int to_live_checks, int to_live_act);
 	Trigger(std::function<void()> func , condition_p_t cond, Function_Data& func_data, Function_Data& cond_data, int to_live_checks, int to_live_act);
 	Trigger(activation_p_t func , std::function<bool()> cond, Function_Data& func_data, Function_Data& cond_data, int to_live_checks, int to_live_act);
 	Trigger(std::function<void()> , std::function<bool()> cond, Function_Data& func_data, Function_Data& cond_data, int to_live_checks, int to_live_act);
+	Trigger() = 0;
 	~Trigger();
 
 	template<class ... Types>
@@ -73,6 +75,8 @@ class TriggerSystem{
 	TriggerSystem();
 	void add(Trigger trig, trigger_timing chk, bool top);
 	void remove(std::deque<Trigger>::iterator trig_p, trigger_timing chk);
+
+	bool has_Trigger( std::string name );
 
 	void serialize( JsonOut &jsout ) const;
     void deserialize( JsonIn &jsin );

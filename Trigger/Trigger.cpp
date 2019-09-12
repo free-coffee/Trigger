@@ -19,8 +19,8 @@ std::map<std::string, condition_p_t> Trigger::cond_map = {
 };
 
 std::map<std::string, std::function<void(JsonObject)>> Trigger::type_read_map = {
-    { "Creature_Creature_int_short" : &Trigger::funcDataRead<Creature&, Creature&, int, short>},
-    { "{'Creature&', 'Tripoint', 'int', 'short'}" : &Trigger::funcDataRead<Creature&, Tripoint, int, short>}
+    { "{'Creature', 'Creature', 'int', 'short'}" : &Trigger::funcDataRead<Creature&, Creature&, int, short>},
+    { "{'Creature', 'Point', 'int', 'short'}" : &Trigger::funcDataRead<Creature&, Tripoint, int, short>}
 };
 
 Trigger::Trigger(activation_p_t func, condition_p_t cond = return_true<Trigger&>, int to_live_checks = -1, int to_live_act = 1) :
@@ -121,6 +121,19 @@ void TriggerSystem::remove(std::deque<Trigger>::iterator tk, trigger_timing chk)
 	if( que.empty() ) {
 		get_trig_handler.at( chk ) = no_trigger;
 	}
+}
+
+
+bool TriggerSystem::has_Trigger( std::string name ){
+    Trigger& curTrig;
+    for( auto const& entry : trig_active ){
+        for( curTrig : trig_active.second ){
+            if( curTrig.name == name ) {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 //better api to avoid external Trigger() construction??
