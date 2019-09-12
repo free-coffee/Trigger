@@ -49,7 +49,7 @@ constexpr std::queue& type_to_queue( std::type_info& type, const std::map<std::t
     return type_map.at( type );
 }
 
-template<class Types... >
+template<class... Types >
 void Trigger::funcDataRead( JsonObject jfuncdata, std::string funcDataName ){
     JasonArray types = jfuncdata.get_array( "types" );
     JasonArray jdata = jfuncdata.get_array( "values" );
@@ -97,9 +97,16 @@ void Trigger::funcDataRead( JsonObject jfuncdata, std::string funcDataName ){
         }
     }
 }
+
+void Function_serializable::deserialize( JsonObject data ){
+}
+
 void TriggerSystem::serialize( JsonOut &json ) const
 {
 
+}
+
+JsonObject Function_serializable::serialize(){
 }
 
 Trigger::store
