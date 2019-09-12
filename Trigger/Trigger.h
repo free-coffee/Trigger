@@ -25,9 +25,25 @@ enum trigger_timing: int {
 	YEAR
 };
 
+template<class... Types>
+class Function_serializable : std::function{
+    std::tuple<Types...> data;
+public:
+    Function_serializable( std::function func, Types... data );
+    void assign_data( Types... data );
+
+    template<int pos, class Type>
+    void set_data_element( Type value );
+    template<int pos, class Type>
+    Type get_data_element();
+
+    JsonObject serialize();
+    void deserialize( JsonObject data );
+}
+
 struct Trigger{
-	activation_p_t* function;
-	condition_p_t* condition;
+	function_serializable* function;
+	function_serializable* condition;
 	int to_live_checks;
 	int to_live_act;
 	std::string name;

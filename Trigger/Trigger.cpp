@@ -10,6 +10,33 @@
 
 using Trigger_standard::no_trigger;
 
+template<class... Types>
+Function_serializable::Function_serializable( std::function func, bool triggerref, Types... data_in ){
+    operator=( func );
+    if( triggerref ){
+        operator=( std::bind( target(), std::ref( std::get<std:integer_sequence<Types...>>( data ) )... ) );
+    } else {
+        operator=( std::bind( target(), _1, std::ref( std::get<std:integer_sequence<Types...>>( data ) )... ) );
+    }
+    assign_data( triggerref, data_in... );
+}
+
+extern Trigger& _1;
+template<class... Types>
+void Function_serializable::assign_data( Types... data_in ){
+    std::get<std:integer_sequence<Types...>>( data ) = data_in... ;
+}
+
+template<int pos, class Type>
+void Function_serializable::set_data_element( Type value ){
+    std::get<pos>( data ) = value;
+}
+
+template<int pos, class Type>
+Type Function_serializable::get_data_element(){
+    return std::get<pos>( data );
+}
+
 std::map<std::string, activation_p_t> Trigger::active_map = {
 
 };
