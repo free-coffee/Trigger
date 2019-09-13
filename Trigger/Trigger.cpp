@@ -10,18 +10,17 @@
 
 using Trigger_standard::no_trigger;
 
+extern Trigger& _1;
 template<class... Types>
 Function_serializable::Function_serializable( std::function func, bool triggerref, Types... data_in ){
-    operator=( func );
     if( triggerref ){
-        operator=( std::bind( target(), std::ref( std::get<std:integer_sequence<Types...>>( data ) )... ) );
+        operator=( std::bind( func, _1, std::ref( std::get<std:integer_sequence<Types...>>( data ) )... ) );
     } else {
-        operator=( std::bind( target(), _1, std::ref( std::get<std:integer_sequence<Types...>>( data ) )... ) );
+        operator=( std::bind( func, std::ref( std::get<std:integer_sequence<Types...>>( data ) )... ) );
     }
     assign_data( triggerref, data_in... );
 }
 
-extern Trigger& _1;
 template<class... Types>
 void Function_serializable::assign_data( Types... data_in ){
     std::get<std:integer_sequence<Types...>>( data ) = data_in... ;
@@ -37,62 +36,28 @@ Type Function_serializable::get_data_element(){
     return std::get<pos>( data );
 }
 
-std::map<std::string, activation_p_t> Trigger::active_map = {
-
-};
-
-std::map<std::string, condition_p_t> Trigger::cond_map = {
+std::map<std::string, std::function> Trigger::functions_map = {
     { "map_dist" : Trigger_standard::map_dist }
 };
 
 std::map<std::string, std::function<void(JsonObject)>> Trigger::type_read_map = {
-    { "{'Creature', 'Creature', 'int', 'short'}" : &Trigger::funcDataRead<Creature&, Creature&, int, short>},
-    { "{'Creature', 'Point', 'int', 'short'}" : &Trigger::funcDataRead<Creature&, Tripoint, int, short>}
+    { "{'Creature', 'Creature', 'int', 'short'}" : &Function_serializable<Creature&, Creature&, int, short>},
+    { "{'Creature', 'Point', 'int', 'short'}" : &Function_serializable<Creature&, Tripoint, int, short>}
 };
 
-Trigger::Trigger(activation_p_t func, condition_p_t cond = return_true<Trigger&>, int to_live_checks = -1, int to_live_act = 1) :
-function( new std::function( func ) ), condition( new std::function( cond ) ), to_live_checks( to_live_checks ), to_live_act( to_live_act )
+Trigger::Trigger(activation_p_t func, condition_p_t cond = return_true<Trigger&>, int to_live_checks = -1, int to_live_act = 1 ) :
+function( &func ), condition( &cond ), to_live_checks( to_live_checks ), to_live_act( to_live_act )
 {}
 
-Trigger::Trigger(std::function<void()>  func, condition_p_t cond = return_true<Trigger&>, int to_live_checks = -1, int to_live_act = 1){
-    Trigger( func, cond , to_live_checks, to_live_act );
-    bind_function( false );
-}
-
-Trigger::Trigger(activation_p_t func, std::function<bool()> cond = return_true<Trigger&>, int to_live_checks = -1, int to_live_act = 1){
-    Trigger( func, cond , to_live_checks, to_live_act );
-    bind_condition( false );
-}
-
-Trigger::Trigger(std::function<void()>  func, std::function<bool()> cond = return_true<Trigger&>, int to_live_checks = -1, int to_live_act = 1){
-    Trigger( func, cond , to_live_checks, to_live_act );
-    bind_function( false );
-    bind_condition( false );
-}
-
-Trigger::~Trigger(){
-    ~*condition();
-    ~*function();
-}
-
+// *function = Function_serializable<Types...>( *function.target(), trigerref, args... );
 template<class Types...>
 void Trigger::bind_function(bool triggerref, Types... args){
-	bind( *function, triggerref, args...);
+	*function = Function_serializable<Types...>( *function.target(), trigerref, args... );
 }
 
 template<class Types...>
 void Trigger::bind_condition(bool triggerref, Types... args){
-	bind( *condition, triggerref, args...);
-}
-
-extern Trigger& _1;
-template<class Types...>
-void Trigger::bind(std::function& used, bool triggerref, Types... args){
-	if(triggerref){
-		used = std::bind(used.target(), _1, args...);
-	}else{
-		used = std::bind(used.target(), args...);
-	}
+	*condition = Function_serializable<Types...>( *condition.target(), trigerref, args... );
 }
 
 void TriggerSystem::check(trigger_timing chk) {

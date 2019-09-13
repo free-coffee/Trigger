@@ -39,7 +39,9 @@ void Trigger::load( JsonObject &data )
                 jfuncdata = data.get_object( funcDataName );
             }
             std::string types = jfuncdata.ge_array( "types" );
-            Trigger::type_read_map( types ) ( jfuncdata, funcDataName );
+            Function_serializable* cdata = new Trigger::type_read_map( types ) ( functions_map.at( data.get_str( funcDataName ) ),
+                funcDataName == "condition_data" && data.has_flag( "COND_TRIGGER_ACCESS" ) || funcDataName == "function_data" && data.has_flag( "ACT_TRIGGER_ACCESS" ));
+            cdata->deserialize( jfuncdata );
         }
     }
     g->Ts.add( *this, string_to_enum( timing_str ), !data.has_flag( "FIFO" ));
@@ -50,19 +52,19 @@ constexpr std::queue& type_to_queue( std::type_info& type, const std::map<std::t
 }
 
 template<class... Types >
-void Trigger::funcDataRead( JsonObject jfuncdata, std::string funcDataName ){
-    JasonArray types = jfuncdata.get_array( "types" );
-    JasonArray jdata = jfuncdata.get_array( "values" );
-    std::tuple<Types... > cdata;
+void Function_serializable::deserialize( JsonObject jdata ){
+    JasonArray types = jdata.get_array( "types" );
+    JasonArray jarr = jdata.get_array( "values" );
     int iter_n = 0;
-    int pos;
+    int pos2;
     std::queue<Creature&> creature_temp;
     std::queue<tripoint> point_temp;
+    std::queue<int> point_helper;
     std::queue<int> int_temp;
     std::queue<short> short_temp;
     const std::map<std::type_info, std::queue&> type_map
         = {{ typeid(Creature&) : creature_temp}, { typeid(tripoint): point_temp}, { typeid(int): int_temp}, { typeid(short) : short_temp}};
-    for( std::string dat : jdata.read_str() ){
+    for( std::string dat : jarr.read_str() ){
         switch( types.get_string( iter_n ) ){
             case "Creature":
                 for( Creature& c : g->all_creatures){
@@ -72,9 +74,16 @@ void Trigger::funcDataRead( JsonObject jfuncdata, std::string funcDataName ){
                 }
                 break;
             case "Point":
-                for( int i = 0; i<3; i++ ){
-                    pos =
+                for( int pos1 = 0; pos2 != std::string::npos; pos1 = pos2 ){
+                    pos2 = dat.find( '_', pos2+1 );
+                    point_helper.push( static_cast<int>( dat.substr( pos1, pos2 ) ) );
                 }
+                if( point_helper.size() == 2 ){
+                    point_temp.push( Tripoint( point_helper.pop(), point_helper.pop() ) );
+                } else {
+                    point_temp.push( Tripoint( point_helper.pop(), point_helper.pop(), point_helper.pop() ) );
+                }
+                // maybe handle the point it is relative to here?
                 break;
             case "int":
                 int_temp.push( static_cast<int>( dat ) );
@@ -85,20 +94,8 @@ void Trigger::funcDataRead( JsonObject jfuncdata, std::string funcDataName ){
         }
         iter_n++;
     }
-    std::get<std::integer_sequence<Types...>>( cdata ) = type_to_queue( typeid( Types ) ).pop()... ;
-
-    switch( funcDataName ){
-        case "condition_data":  //refractor since Trigger_access is on Trigger data.
-            bind_condition( jfuncdata.has_flag( "COND_TRIGGER_ACCESS" ), std::get<std::integer_sequence<Types...>>( cdata )... ); //use with bind(,Tuple) directly to avoid long code?
-            break;
-        case "function_data":
-            bind_function( jfuncdata.has_flag( "ACT_TRIGGER_ACCESS" ), std::get<std::integer_sequence<Types...>>( cdata )... );
-            break;
-        }
-    }
+    assign_data( type_to_queue( typeid( Types ) ).pop()... );
 }
-
-void Function_serializable::deserialize( JsonObject data ){
 }
 
 void TriggerSystem::serialize( JsonOut &json ) const

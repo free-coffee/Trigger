@@ -29,7 +29,7 @@ template<class... Types>
 class Function_serializable : std::function{
     std::tuple<Types...> data;
 public:
-    Function_serializable( std::function func, Types... data );
+    Function_serializable( std::function func, bool triggerref, Types... data );
     void assign_data( Types... data );
 
     template<int pos, class Type>
@@ -42,19 +42,14 @@ public:
 }
 
 struct Trigger{
-	function_serializable* function;
-	function_serializable* condition;
+	std::unique_ptr<activation_p_t> function;
+	std::unique_ptr<condition_p_t> condition;
 	int to_live_checks;
 	int to_live_act;
 	std::string name;
 
-	// If func or cond require arguments diffrent frome None or (Trigger& ) use the bind members.
+	// If func or cond require arguments diffrent frome (Trigger& ) use the bind members.
 	Trigger(activation_p_t func , condition_p_t cond, Function_Data& func_data, Function_Data& cond_data, int to_live_checks, int to_live_act);
-	Trigger(std::function<void()> func , condition_p_t cond, Function_Data& func_data, Function_Data& cond_data, int to_live_checks, int to_live_act);
-	Trigger(activation_p_t func , std::function<bool()> cond, Function_Data& func_data, Function_Data& cond_data, int to_live_checks, int to_live_act);
-	Trigger(std::function<void()> , std::function<bool()> cond, Function_Data& func_data, Function_Data& cond_data, int to_live_checks, int to_live_act);
-	Trigger() = 0;
-	~Trigger();
 
 	template<class ... Types>
 	void bind_function(bool triggerref, Types... args);
@@ -67,11 +62,7 @@ private:
     static std::map<std::string, activation_p_t> active_map;
     static std::map<std::string, condition_p_t> cond_map;
     static std::map<std::string, std::function<void(JsonObject)>> type_read_map;
-
-	template<class ... Types>
-	void bind(std::function& used, bool triggerref, Types... args);
 };
-
 
 class TriggerSystem{
 	//storing

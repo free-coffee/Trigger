@@ -17,10 +17,10 @@ str: Ttiming for checking the Trigger. Possible values as defined in Trigger.h/t
 FRAME, SECOUND, MINUTE, HOUR, DAY, SEASON, YEAR
 
 "function":
-str: Name of the function called on activation. Has to be mapped in Trigger.cpp/active_map. Its function must have the blueprint void(Trigger& ) or specify function_data if the arguments differ.
+str: Name of the function called on activation. Has to be mapped in Trigger.cpp/functions_map. Its function must have the blueprint void(Trigger& ) or specify function_data if the arguments differ.
 
 "condition":
-str: Name of the condition checked on timing. Names have to be mapped in Trigger.cpp/condition_map. Its function must have the blueprint bool(Trigger& ) or specify condition_data if the arguments differ.
+str: Name of the condition checked on timing. Names have to be mapped in Trigger.cpp/functions_map. Its function must have the blueprint bool(Trigger& ) or specify condition_data if the arguments differ.
 
 "to_live_checks"
 int: number of condition checks the Trigger will perform before destruction. -1 for infinite.
@@ -36,9 +36,11 @@ str/obj: name or inline of Function data used for the function.
 
 "flags":
 "UNIQUE" : If the Trigger is active it can't be added again.
+"STATIC" : The Trigger isn't saved on saving the game.
+"STARTUP" : Add this Trigger on game startup.
 "FIFO" : The Trigger is at the end of the que instead of the start.
-"COND_TRIGGER_ACCESS" :
-"ACT_TRIGGER_ACCESS" :
+"COND_TRIGGER_ACCESS" : The condition has access to the Trigger information.
+"ACT_TRIGGER_ACCESS" : The function has access to the Trigger information.
 
 ## Trigger definition hardcoded.
 
